@@ -12,7 +12,7 @@ The code saves coordinates of segmented fracture into a txt useful to the input 
 The code reshapes the fracture coordinates save in the cell array , into a format readable by FracPaQ: each line in the .txt file correspond to a segmented 
 fracture with pairs of xn - yn coordinates.
 
-The test image attached here is a CT micrograph of a ceramics sample (kaolin matrix + quartz temper).
+The test image attached here is a CT micrograph of a ceramics sample (kaolin matrix + quartz temper). Outputs images also attached.
 
 The main script calls two functions:
 
