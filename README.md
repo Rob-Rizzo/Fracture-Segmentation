@@ -8,7 +8,7 @@ is the binarised.
 Because we are interested in only the linear features, i.e. the fractures, using a ratio between the maximum axis length and the eccentricity values of the 
 connected components, the code filters out the round-shaped features.
 
-The example attached uses a CT micrograph of a ceramics sample (kaolin matrix + quartz temper).
+The test image attached here is a CT micrograph of a ceramics sample (kaolin matrix + quartz temper).
 
 The main script calls two functions:
 
