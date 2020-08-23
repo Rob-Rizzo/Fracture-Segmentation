@@ -1,5 +1,6 @@
 % AUTO-FRACTURE TRACING 
-% Fracture tracing script, currently only tested on SEM BSE images. 
+% Fracture tracing script, currently only tested on SEM/BSE images, small size photographs and CT micrographs 
+%
 % Most important parameters to changes: MEDIAN FILTER aperture, BINARIZED bw_threshold, MORPHOLOGICAL PARAMETER gap_length1, conversion. 
 % 
 % Author: Roberto Rizzo @ HWU Edinburgh / University of Aberdeen
@@ -14,7 +15,7 @@ format compact;
 
 %% --------------------------- SET PARAMETERS ----------------------------
 %INPUT Value of pixel per mm in the analysed image
-conversion=700; % in pixel/mm BSE_Test = 1115; BSE_Test2=1490
+conversion=700;
 
 %MEDIAN FILTER
 % n x m area for median filter. preferably smaller than the pore size and larger than the fracture aperature
@@ -390,7 +391,7 @@ title({'Segmented fracture network, N = ', num2str(length(B))});
 hold off;
 
 %save the fracture hist and rose diagram
-print('-djpeg', '-r300', 'Carmel-083-4-2_Inverted_Segmented.jpeg');
+print('-djpeg', '-r300', 'TEST_ceramics_Segmented.jpeg');
 
 figure;
 
@@ -422,7 +423,7 @@ title({'Fracture';'orientations'});
 
 
 %save the original image + segmented,and histogram + rose diagram fracture network to file
-print('-djpeg', '-r300', 'Carmel-083-4-2_Inverted_Hist-Rose.jpeg');
+print('-djpeg', '-r300', 'TEST_ceramics_Hist-Rose.jpeg');
 
 figure;
 for k = 1:length(B)
@@ -439,7 +440,7 @@ xlabel('X, px');
 ylabel('Y, px');
 title({'Segmented fractures, N = ', num2str(length(B))});
 %save the segmented fracture network to file
-%print('-djpeg', '-r300', 'Carmel-083-3-1_Network.jpeg');
+print('-djpeg', '-r300', 'TEST_ceramics_Network.jpeg');
 
 %% ======================== PRINT DATA TO FILE ===========================
 % Save coordinates of segmented fracture into a txt for FracPaQ
@@ -461,6 +462,6 @@ for q = 1:length(B)
             ss(i+k+1) = bb2(i,1);
             k = k+1; 
         end
-        dlmwrite('Carmel_083-4-2_Inverted.txt',ss,'delimiter','\t','-append');
+        dlmwrite('TEST_ceramics.txt',ss,'delimiter','\t','-append');
     end
  end
