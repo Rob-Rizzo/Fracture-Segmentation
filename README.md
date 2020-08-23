@@ -15,6 +15,7 @@ The main script calls two functions:
   (1) roseEqualArea.m --> which allows to plot equal area rose digrams of the fractures' trace angles
                           This function has been written by Dr. David Healy (Univerisity of Aberdeen) and it's part of the FracPaQ toolbox
                           (http://fracpaq.com/index.html)
+                          
   (2) RDPsimplify.m --> which, by using theRamer-Douglas-Peucker algorithm for curve semplification, reduces the number of vertices in the fracture traces 
                         according to a specified tolerance.
                         This function has been written by Wolfgang Schwanghart on 13 July 2010
