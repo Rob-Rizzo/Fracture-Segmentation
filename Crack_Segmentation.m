@@ -15,7 +15,7 @@ format compact;
 
 %% --------------------------- SET PARAMETERS ----------------------------
 %INPUT Value of pixel per mm in the analysed image
-conversion=700;
+conversion= 240; % this is the value of px/mm for the test image attached
 
 %MEDIAN FILTER
 % n x m area for median filter. preferably smaller than the pore size and larger than the fracture aperature
