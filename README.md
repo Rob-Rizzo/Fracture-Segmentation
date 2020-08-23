@@ -5,8 +5,12 @@ The code first uses a small and large median filter to segment the voids, i.e. p
 preferentially be: (1) small median filter, smaller than the pore size; and (2) large median filter, larger than fracture widths. The resulting filtered image 
 is the binarised.
 
-Because we are interested in only the linear features, i.e. the fractures, using a ratio between the maximum axis length and the eccentricity values of the 
+Because we are interested only in the linear features, i.e. the fractures, using a ratio between the maximum axis length and the eccentricity values of the 
 connected components, the code filters out the round-shaped features.
+
+The code saves coordinates of segmented fracture into a txt useful to the input the data into FracPaQ. 
+The code reshapes the fracture coordinates save in the cell array , into a format readable by FracPaQ: each line in the .txt file correspond to a segmented 
+fracture with pairs of xn - yn coordinates.
 
 The test image attached here is a CT micrograph of a ceramics sample (kaolin matrix + quartz temper).
 
