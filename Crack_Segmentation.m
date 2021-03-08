@@ -15,7 +15,7 @@ format compact;
 
 %% --------------------------- SET PARAMETERS ----------------------------
 %INPUT Value of pixel per unit in the analysed image; "unit" is the length scale (either metres, cm, mm, ect).
-conversion= 240; % this is the value of px/unit for the test image attached = TESTING_IMAGE;
+conversion= 240; % this is the value of px/unit for the test image attached = INPUT_IMAGE;
 
 %MEDIAN FILTER
 % n x m area for median filter. preferably smaller than the pore size and larger than the fracture aperature
