@@ -391,7 +391,7 @@ title({'Segmented fracture network, N = ', num2str(length(B))});
 hold off;
 
 %save the fracture hist and rose diagram
-print('-djpeg', '-r300', 'TEST_ceramics_Segmented.jpeg');
+print('-djpeg', '-r300', 'FileName_Segmented.jpeg'); % <--- Change "FileName" to current data name
 
 figure;
 
@@ -423,7 +423,7 @@ title({'Fracture';'orientations'});
 
 
 %save the original image + segmented,and histogram + rose diagram fracture network to file
-print('-djpeg', '-r300', 'TEST_ceramics_Hist-Rose.jpeg');
+print('-djpeg', '-r300', 'FileName_Hist-Rose.jpeg'); % <--- Change "FileName" to current data name
 
 figure;
 for k = 1:length(B)
@@ -440,13 +440,15 @@ xlabel('X, px');
 ylabel('Y, px');
 title({'Segmented fractures, N = ', num2str(length(B))});
 %save the segmented fracture network to file
-print('-djpeg', '-r300', 'TEST_ceramics_Network.jpeg');
+print('-djpeg', '-r300', 'FileName_Network.jpeg'); % <--- Change "FileName" to current data name
 
 %% ======================== PRINT DATA TO FILE ===========================
 % Save coordinates of segmented fracture into a txt for FracPaQ
 % Reshape fracture coordinates in cell array B, into a format readable by
 % FracPaQ: each line in the .txt file correspond to a segmented fracture
-% with pairs of xn - yn coordinates.
+% with pairs of xn - yn coordinates. 
+%   o––––––––––––––––o–––––––––––––––o
+% X1,Y1            X2,Y2  ...      Xn,Yn
 
 for q = 1:length(B)
    
@@ -462,6 +464,6 @@ for q = 1:length(B)
             ss(i+k+1) = bb2(i,1);
             k = k+1; 
         end
-        dlmwrite('TEST_ceramics.txt',ss,'delimiter','\t','-append');
+        dlmwrite('TEST_FileName.txt',ss,'delimiter','\t','-append'); % <--- Change "FileName" to current data name
     end
  end
