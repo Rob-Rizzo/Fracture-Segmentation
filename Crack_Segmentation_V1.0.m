@@ -1,6 +1,6 @@
-% AUTO-FRACTURE TRACING 
-% Fracture tracing script, currently only tested on SEM/BSE images, small size photographs and CT micrographs 
-%
+% CRACK SEGMENTATION Version 1.0
+
+% Fracture tracing script, currently only tested on SEM/BSE images, small size photographs and CT micrographs. 
 % Most important parameters to changes: MEDIAN FILTER aperture, BINARIZED bw_threshold, MORPHOLOGICAL PARAMETER gap_length1, conversion. 
 % 
 % Author: Roberto Rizzo @ HWU Edinburgh / University of Aberdeen
@@ -14,12 +14,12 @@ format short g;
 format compact;
 
 %% --------------------------- SET PARAMETERS ----------------------------
-%INPUT Value of pixel per unit in the analysed image; "unit" is the length scale (either metres, cm, mm, ect).
-conversion= 240; % <--- Modify accordingly. The current value is the of px/mm ratio for the test image "INPUT_IMAGE.tif". 
+%INPUT Value of pixel per m in the analysed image
+conversion= 240; % in pixel/m BSE_Test = 1115; BSE_Test2=1490
 
 %MEDIAN FILTER
 % n x m area for median filter. preferably smaller than the pore size and larger than the fracture aperature
-aperture1      = [32 32];  % default [24 24]
+aperture1      = [64 64];  % default [24 24]
 aperture2      = [2 2]; %default [3 3]
 
 % BINARIZATION AND FILTER PARAMETERS
@@ -32,27 +32,26 @@ wiener_area2    = [3 3];
 rescale_range  = [0 40];   
 
 % MORPHOLOGICAL PARAMETERS
-% minimum fracture length in pixels (given by the major axes length,
-% regionprops function)
-frac_length     = 8;    % default 8
+% minimum fracture length in pixels (given by the major axes length, regionprops function)
+frac_length     = 16;    % default 8
 % largest object size (nr of pixels) to be removed
-object_limit    = round((2/3).*frac_length);  
+object_limit    = round((2/3).*frac_length);  % default 2/3
 % gap length closed by morphological dilation-erosion
-gap_length1     = round((1/3).*frac_length);   
+gap_length1     = round((1/3).*frac_length);   % default 1/3
 
 % TARGETED CLOSING
 % eccentricity threshold (0 is circular, 1 is line)
-ecc_threshold   = 0.90;
+ecc_threshold   = 0.99;
 % variation in alignment between major axis of component and end-point of a second component (-angle_var to + angle_var, in degrees)
 angle_var       = 15;
 % gap length between line segments closed by targeted connections
-gap_length2     = 10;  
+gap_length2     = 10; %default 10  
 
 % PRUNING
 % length of branches to be pruned
-pruning_length  = frac_length; 
+pruning_length  = frac_length; %default none
 % last size-based filter
-frac_length2 = 1.*frac_length;     
+frac_length2 = 1.*frac_length;     %default 1
 
 %% ============================ READ DATA ================================
 [FILENAME, PATHNAME] = uigetfile({'*.*'},'Select an image');
@@ -64,10 +63,11 @@ axis on;
 axis image;
 axis tight;
 box on;
+set(gca, 'FontSize', 14);
 caption = sprintf('Input Image');
 title(caption, 'Interpreter', 'None');
-xlabel('X, px');
-ylabel('Y, px');
+xlabel('X [px]');
+ylabel('Y [px]');
 
 
 % Get the dimensions of the image.
@@ -122,13 +122,15 @@ Im_bin(Im_filt >= bw_threshold)= 1;
 Im_bin = imbinarize(Im_bin);                            
 toc;
 %display figure
-figure; imshowpair(Im_filt, Im_bin, 'montage'); title('Filtred vs. Binarized Images');
+figure; imshowpair(Im_filt, Im_bin, 'montage'); 
+set(gca, 'FontSize',14);
+title('Filtred vs. Binarized Images');
 axis on;
 axis image;
 axis tight;
 box on;
-xlabel('X, px');
-ylabel('Y, px');
+xlabel('X [px]');
+ylabel('Y [px]');
 
 
 % remove smallest objects
@@ -147,13 +149,15 @@ end
 Im_bin= bwmorph(Im_bin,'thin', Inf);                                 
 toc;
 
-figure; imshowpair(Im_filt,Im_bin,'montage'); title('Filtred vs. Skeletonized Images');
+figure; imshowpair(Im_filt,Im_bin,'montage'); 
+set(gca, 'FontSize',14);
+title('Filtred vs. Skeletonized Images');
 axis on;
 axis tight;
 axis image;
 box on;
-xlabel('X, px');
-ylabel('Y, px');
+xlabel('X [px]');
+ylabel('Y [px]');
 
 %% =================== CONNECTION OF LINEAR OBJECTS ======================
 % ------------------------ MORPHOLOGICAL CLOSING ------------------------
@@ -277,7 +281,7 @@ for j = 1:length(I)
 end
 
 %% ==================== FILTER CIRCULAR COMPONENTS =======================
-% Im_bin_conn      = bwmorph(Im_bin_conn,'thin', Inf);                        % skeletonize binary image
+Im_bin_conn      = bwmorph(Im_bin_conn,'thin', Inf);                        % skeletonize binary image
 
 % get new stats
 STATS   = regionprops(Im_bin_conn,'MajorAxisLength','Eccentricity');        
@@ -291,13 +295,15 @@ I = find(STATS.MajorAxisLength <= frac_length.*2& STATS.Eccentricity < ecc_thres
 for i = 1:length(I)
     Im_bin_conn(CC.PixelIdxList{I(i)}) = 0;
 end
-figure; imshow(Im_bin_conn);title('Skeletonised Image');
+figure; imshow(Im_bin_conn);
+set(gca, 'FontSize',14)
+title('Skeletonised Image');
 axis on;
 axis tight;
 axis image;
 box on;
-xlabel('X, px');
-ylabel('Y, px');
+xlabel('X [px]');
+ylabel('Y [px]');
 %% ============================= PRUNING =================================
 %close all;
 
@@ -351,12 +357,9 @@ ENDS_f = bwmorph(Im_bin_conn, 'endpoints');
 %% ============================== FIGURE =================================
 [B,L]   = bwboundaries(Im_bin_conn);
 
-% figure; 
-% hold on;
+
 figure; 
-% set(gcf, 'PaperPositionMode', 'manual') ; 
-% set(gcf, 'PaperUnits', 'centimeters') ; 
-% set(gcf, 'PaperPosition', [ 1 1 20 20 ]) ; 
+
 
 % Print the original image together with the outputs produced in this code
 subplot(1,2,1); imshow(Im_original,[]);
@@ -364,9 +367,10 @@ axis on;
 axis image;
 axis tight;
 box on;
+set(gca, 'FontSize',14);
 title('Input image');
-xlabel('X, px');
-ylabel('Y, px');
+xlabel('X [px]');
+ylabel('Y [px]');
 
 subplot(1,2,2);
 imshow(Im_original);
@@ -385,29 +389,33 @@ yticklabels(cellfun(addMM,num2cell(yticks'),'UniformOutput',false));
 axis on;
 box on;
 axis tight;
-xlabel('X, mm');
-ylabel('Y, mm');
+set(gca, 'FontSize',14)
+xlabel('X [m]'); % <--- adjust accordigly
+ylabel('Y [m]'); % <--- adjust accordigly
 title({'Segmented fracture network, N = ', num2str(length(B))});
 hold off;
 
-%save the fracture hist and rose diagram
-print('-djpeg', '-r300', 'FileName_Segmented.jpeg'); % <--- Change "FileName" to current data name
+% save the fracture hist and rose diagram
+%print('-djpeg', '-r300', 'FileName_Images.jpeg'); <--- Change "FileName" with current data name
 
 figure;
 
-%plot histogram of fracture length distribution
+% plot histogram of fracture length distribution
 length_fr = cat(1,STATS.MajorAxisLength./conversion);
 subplot(1,2,1);
 h1 = histogram(length_fr,'FaceColor','r','FaceAlpha',.3);
 box on
 grid on
 axis square;
-xlabel('Fracture length, mm');
+set(gca,'FontSize',14);
+xlabel('Fracture length [m]'); % <--- adjust accordigly
 ylabel('Frequency');
-% caption = sprintf({'Histogram of'; 'fracture distribution'});
 title({'Histogram of'; 'fracture distribution'});
 
-%plot equal area rose diagram of fracture orientation
+% Save fracture length for statistical analysis
+dlmwrite('FileName_FractureLength.txt', length_fr); % <--- Change "FileName" with current data name
+
+% plot equal area rose diagram of fracture orientation
 orient = cat(1, 90-STATS.Orientation);
 
 orient2 = [orient; orient + 180];
@@ -419,11 +427,12 @@ end
    
 subplot(1,2,2) ;
 roseEqualArea(orient2, 18, 0, 0, 'red') ;
+set(gca, 'FontSize',14);
 title({'Fracture';'orientations'});
 
 
-%save the original image + segmented,and histogram + rose diagram fracture network to file
-print('-djpeg', '-r300', 'FileName_Hist-Rose.jpeg'); % <--- Change "FileName" to current data name
+% save the original image + segmented,and histogram + rose diagram fracture network to file
+% print('-djpeg', '-r300', 'FileName_Hist-Rose.jpeg'); % <--- Change "FileName" with current data name
 
 figure;
 for k = 1:length(B)
@@ -433,28 +442,27 @@ for k = 1:length(B)
 end
 hold off;
 axis on;
-% axis ij;
+axis ij;
 axis tight;
 box on;
-xlabel('X, px');
-ylabel('Y, px');
+set(gca, 'FontSize',14);
+xlabel('X [px]');
+ylabel('Y [px]');
 title({'Segmented fractures, N = ', num2str(length(B))});
 %save the segmented fracture network to file
-print('-djpeg', '-r300', 'FileName_Network.jpeg'); % <--- Change "FileName" to current data name
+%print('-djpeg', '-r300', 'FileName_Network.jpeg'); % <--- Change "FileName" with current data name
 
 %% ======================== PRINT DATA TO FILE ===========================
 % Save coordinates of segmented fracture into a txt for FracPaQ
 % Reshape fracture coordinates in cell array B, into a format readable by
 % FracPaQ: each line in the .txt file correspond to a segmented fracture
-% with pairs of xn - yn coordinates. 
-%   o––––––––––––––––o–––––––––––––––o
-% X1,Y1            X2,Y2  ...      Xn,Yn
+% with pairs of xn - yn coordinates.
 
 for q = 1:length(B)
    
     bb2 = B{q,1}; 
 
-% % Ramer-Douglas-Peucker algorithm for curve simplification (https://en.wikipedia.org/wiki/Ramer?Douglas?Peucker_algorithm)
+% Ramer-Douglas-Peucker algorithm for curve simplification (https://en.wikipedia.org/wiki/Ramer?Douglas?Peucker_algorithm)
    bb2 = RDPsimplify(bb2,1);
   
     if size(bb2,1) > 1
@@ -464,6 +472,6 @@ for q = 1:length(B)
             ss(i+k+1) = bb2(i,1);
             k = k+1; 
         end
-        dlmwrite('TEST_FileName.txt',ss,'delimiter','\t','-append'); % <--- Change "FileName" to current data name
+        dlmwrite('FileName.txt',ss,'delimiter','\t','-append'); % <--- Change "FileName" with current data name
     end
  end
