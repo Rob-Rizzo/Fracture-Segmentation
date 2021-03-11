@@ -34,36 +34,39 @@ format compact;
 % FILTER and BINARIZATION PARAMETERS
 
 % Gaussian Filter
-gaus_filt = 3;
+gaus_filt = 2;
 
 % Median Filter
 aperture1 = [64 64];
-aperture2 = [2 2];
+aperture2 = [3 3];
 % Frangi filter
 frangi_size1 = 7;
-frangi_size2 = 3;
+frangi_size2 = 2;
 
 %binarization threshold (1-100)
 bw_threshold = 30;
 
 % neighbourhoodsize (x,y) for wiener filter
 wiener_area1 = [10 10];    
-wiener_area2 = [3 3]; 
+wiener_area2 = [2 2]; 
 
 % min-max range to rescale grayscale values
 rescale_range  = [0 40];    
 
 % MORPHOLOGICAL PARAMETERS
 % minimum fracture length in pixels (given by the major axes length, regionprops function)
-frac_length = 30;    % default 8
+frac_length = 20;    % default 8
 % largest object size (nr of pixels) to be removed
 object_limit  = round((2/3).*frac_length);  % default 2/3 of fracture length (if known)
 % gap length closed by morphological dilation-erosion
 gap_length1 = round((1/3).*frac_length);   % default 1/3 of fracture length (if known)
+% Strel parameters used to perform the morphological close 
+str_size = 5;
+str_bound = 4;
 
 % TARGETED CLOSING
 % eccentricity threshold (0 is circular, 1 is line)
-ecc_threshold = 0.99;
+ecc_threshold = 0.95;
 % variation in alignment between major axis of component and end-point of a second component (-angle_var to + angle_var, in degrees)
 angle_var = 15;
 % gap length between line segments closed by targeted connections
@@ -91,7 +94,8 @@ caption = sprintf('Input Image');
 title(caption, 'Interpreter', 'None');
 xlabel('X [px]');
 ylabel('Y [px]');
-
+%save input image
+print('-djpeg', '-r300', 'Alexis_Input.jpeg');
 
 % Get the dimensions of the image.
 % numberOfColorChannels should be = 1 for a gray scale image, and 3 for an RGB color image.
@@ -100,6 +104,8 @@ if numberOfColorChannels > 1
   % It's not really gray scale like we expected - it's color.
   % Use weighted sum of ALL channels to create a gray scale image.
   im_gr = rgb2gray(im_original);
+else
+   im_gr = im_original;
 end
 
 
@@ -158,6 +164,8 @@ box on;
 xlabel('X [px]');
 ylabel('Y [px]');
 
+%save the filtered images
+%print('-djpeg', '-r300', 'FileName_Filtered.jpeg');
 %% ========================== BINARIZATION ===============================
 
 im_bin = imbinarize(im_final);
@@ -166,12 +174,15 @@ im_bin = bwareaopen(im_bin, object_limit);
 
 tic;
 % angle of the line object
-for alpha = 1:181  
-    % set orientation of line object
-    se = strel('line', gap_length1, alpha);     
-    % close gaps between line segments by dilation and erosion
-    im_close = imclose(im_bin, se);                                          
-end
+% for alpha = 1:181  
+%     % set orientation of line object
+%     se = strel('line', gap_length1, alpha);     
+%     % close gaps between line segments by dilation and erosion
+%     im_close = imclose(im_bin, se);                                          
+% end
+
+se = strel('disk',str_size,str_bound);
+im_close = imclose(im_bin, se);
 
  % skeletonize binary image
 im_thin = bwmorph(im_close,'thin', Inf);                                 
@@ -199,6 +210,9 @@ axis tight;
 box on;
 xlabel('X [px]');
 ylabel('Y [px]');
+
+%save the skelotnised and binarised images
+%print('-djpeg', '-r300', 'FileName_Skeletonise.jpeg');
 
 %% =================== CONNECTION OF LINEAR OBJECTS ======================
 % ------------------------ MORPHOLOGICAL CLOSING ------------------------
@@ -437,16 +451,16 @@ axis tight;
 set(gca, 'FontSize',14);
 xlabel('X [px]');
 ylabel('Y [px]');
-title({'Segmented fracture network, N = ', num2str(length(B))});
+title({'Segmented fractures, N = ', num2str(length(B))});
 hold off;
 
-%save the fracture hist and rose diagram
-%print('-djpeg', '-r300', 'TEST_Carbonate.jpeg');
+%save the segmented fracture network
+%print('-djpeg', '-r300', 'FileName_Network.jpeg');
 
 figure;
 
 %plot histogram of fracture length distribution
-%length_fr = cat(1,STATS.MajorAxisLength./conversion);
+
 length_fr = cat(1,STATS.MajorAxisLength);
 subplot(1,2,1);
 h1 = histogram(length_fr,'FaceColor','r','FaceAlpha',.3);
@@ -457,10 +471,10 @@ set(gca, 'FontSize', 14);
 xlabel('Fracture length [px]');
 ylabel('Frequency');
 % caption = sprintf({'Histogram of'; 'fracture distribution'});
-title({'Histogram of'; 'fracture distribution'});
+title({'Hist of fracture distribution, N = ', num2str(length(B))});
 
 %Save fracture length for statistical analysis
-dlmwrite('FileName_FractureLength.txt', length_fr); % <--- Change "FileName" with current data name
+%dlmwrite('FileName_FractureLength.txt', length_fr); % <--- Change "FileName" with current data name
 
 %plot equal area rose diagram of fracture orientation
 orient = cat(1, 90-STATS.Orientation);
@@ -474,10 +488,11 @@ end
    
 subplot(1,2,2) ;
 roseEqualArea(orient2, 18, 0, 0, 'red') ;
+set(gca, 'FontSize', 14);
 title({'Fracture';'orientations'});
 
 
-%save the original image + segmented,and histogram + rose diagram fracture network to file
+%save the histogram + rose diagram of the segmented fracture network 
 %print('-djpeg', '-r300', 'FileName_Hist-Rose.jpeg');
 
 figure;
@@ -488,6 +503,7 @@ for k = 1:length(B)
 end
 hold off;
 axis on;
+axis ij;
 axis tight;
 box on;
 set(gca, 'FontSize', 14)
@@ -495,7 +511,7 @@ xlabel('X [px]');
 ylabel('Y [px]');
 title({'Segmented fractures, N = ', num2str(length(B))});
 %save the segmented fracture network to file
-%print('-djpeg', '-r300', 'FileName_Network.jpeg');
+%print('-djpeg', '-r300', 'FileName_Segmented.jpeg');
 
 %% ======================== PRINT DATA TO FILE ===========================
 % Save coordinates of segmented fracture into a txt for FracPaQ
