@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Roberto Emanuele Rizzo"
-  given-names: "Mona"
+- family-names: "Rizzo"
+  given-names: "Roberto Emanuele"
   orcid: "https://orcid.org/0000-0002-1607-6283"
 title: "Fracture Segmentation"
 version: 2.0.4
